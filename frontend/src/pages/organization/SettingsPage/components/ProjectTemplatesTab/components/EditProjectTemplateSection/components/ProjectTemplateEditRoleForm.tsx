@@ -16,6 +16,7 @@ import { GeneralPermissionPolicies, TPermissionAction } from "@app/pages/project
 import { PermissionEmptyState } from "@app/pages/project/RoleDetailsBySlugPage/components/PermissionEmptyState";
 import {
   formRolePermission2API,
+  isConditionalSubjects,
   PROJECT_PERMISSION_OBJECT,
   projectRoleFormSchema,
   rolePermission2Form
@@ -206,6 +207,7 @@ export const ProjectTemplateEditRoleForm = ({
                   key={`project-permission-${subject}`}
                   isDisabled={isDisabled}
                   isOpen={openPolicies.includes(subject)}
+                  isConditional={isConditionalSubjects(subject)}
                 >
                   {renderConditionalComponents(subject, isDisabled)}
                 </GeneralPermissionPolicies>

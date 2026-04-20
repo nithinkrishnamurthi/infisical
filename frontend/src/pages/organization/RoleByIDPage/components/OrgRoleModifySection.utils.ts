@@ -232,6 +232,7 @@ export const formSchema = z.object({
 });
 
 export type TFormSchema = z.infer<typeof formSchema>;
+export type TPermissionsKey = keyof NonNullable<TFormSchema["permissions"]>;
 
 export const rolePermission2Form = (permissions: TPermission[] = []) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

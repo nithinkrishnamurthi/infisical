@@ -21,7 +21,8 @@ import {
   formSchema,
   ORG_PERMISSION_OBJECT,
   rolePermission2Form,
-  TFormSchema
+  TFormSchema,
+  TPermissionsKey
 } from "../OrgRoleModifySection.utils";
 import { OrgAddPoliciesButton } from "./OrgAddPoliciesButton";
 import { OrgPermissionQuickSelect } from "./OrgPermissionQuickSelect";
@@ -165,20 +166,21 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
                     isOpen={openPolicies.includes(subject)}
                     triggerSuffix={
                       <OrgPermissionQuickSelect
-                        subject={subject}
+                        subject={subject as TPermissionsKey}
                         actions={config.actions}
                         isDisabled={!isCustomRole}
                       />
                     }
                     onRemoveLastRule={
                       isCustomRole
-                        ? () =>
+                        ? () => {
+                            const current = form.getValues("permissions") ?? {};
                             form.setValue(
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                              `permissions.${subject}` as any,
-                              undefined,
+                              "permissions",
+                              { ...current, [subject]: undefined } as NonNullable<TFormSchema["permissions"]>,
                               { shouldDirty: true }
-                            )
+                            );
+                          }
                         : undefined
                     }
                   />

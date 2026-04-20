@@ -10,7 +10,7 @@ import {
 } from "@app/components/v3";
 import { OrgPermissionActions } from "@app/context/OrgPermissionContext/types";
 
-import { TOrgPermissionAction, TFormSchema } from "../OrgRoleModifySection.utils";
+import { TOrgPermissionAction, TFormSchema, TPermissionsKey } from "../OrgRoleModifySection.utils";
 
 enum Permission {
   NoAccess = "no-access",
@@ -20,16 +20,15 @@ enum Permission {
 }
 
 type Props = {
-  subject: string;
+  subject: TPermissionsKey;
   actions: readonly TOrgPermissionAction[];
   isDisabled?: boolean;
 };
 
 export const OrgPermissionQuickSelect = ({ subject, actions, isDisabled }: Props) => {
-  const { setValue, trigger } = useFormContext<TFormSchema>();
-  const rule = useWatch({ name: `permissions.${subject}.0` as never }) as
-    | Record<string, boolean>
-    | undefined;
+  const { setValue, trigger, getValues } = useFormContext<TFormSchema>();
+  const permissions = useWatch({ name: "permissions" });
+  const rule = permissions?.[subject]?.[0] as Record<string, boolean> | undefined;
 
   const selectedPermissionCategory = useMemo(() => {
     if (!rule) return Permission.NoAccess;
@@ -42,21 +41,30 @@ export const OrgPermissionQuickSelect = ({ subject, actions, isDisabled }: Props
 
   const selectedCount = actions.filter(({ value }) => rule?.[value]).length;
 
+  const setSubjectPermission = (value: NonNullable<TFormSchema["permissions"]>[TPermissionsKey]) => {
+    const current = getValues("permissions") ?? {};
+    setValue("permissions", { ...current, [subject]: value } as NonNullable<TFormSchema["permissions"]>, {
+      shouldDirty: true
+    });
+    trigger("permissions");
+  };
+
   const handlePermissionChange = (val: Permission) => {
     if (val === Permission.Custom) return;
 
-    const allFalse = Object.fromEntries(actions.map(({ value }) => [value, false]));
+    if (val === Permission.NoAccess) {
+      setSubjectPermission(undefined);
+      return;
+    }
+
     const allTrue = Object.fromEntries(actions.map(({ value }) => [value, true]));
 
     const next =
       val === Permission.FullAccess
         ? allTrue
-        : val === Permission.ReadOnly
-          ? { ...allFalse, [OrgPermissionActions.Read]: true }
-          : allFalse;
+        : { ...Object.fromEntries(actions.map(({ value }) => [value, false])), [OrgPermissionActions.Read]: true };
 
-    setValue(`permissions.${subject}.0` as never, next as never, { shouldDirty: true });
-    trigger("permissions");
+    setSubjectPermission([next] as NonNullable<TFormSchema["permissions"]>[TPermissionsKey]);
   };
 
   return (
