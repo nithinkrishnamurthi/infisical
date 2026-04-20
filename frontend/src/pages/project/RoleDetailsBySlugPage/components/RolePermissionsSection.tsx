@@ -291,8 +291,9 @@ export const RolePermissionsSection = ({ roleSlug, isDisabled }: Props) => {
                           !isDisabled
                             ? () =>
                                 form.setValue(
-                                  `permissions.${subject}` as never,
-                                  [] as never,
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  `permissions.${subject}` as any,
+                                  [],
                                   { shouldDirty: true }
                                 )
                             : undefined

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SaveIcon } from "lucide-react";
@@ -56,6 +57,8 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
     reset
   } = form;
 
+  const [openPolicies, setOpenPolicies] = useState<string[]>([]);
+
   const { mutateAsync: updateRole } = useUpdateOrgRole();
 
   const onSubmit = async (el: TFormSchema) => {
@@ -68,6 +71,17 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
     reset(el);
     createNotification({ type: "success", text: "Successfully updated role" });
   };
+
+  const handleFormSubmit = handleSubmit(onSubmit, (formErrors) => {
+    if (formErrors.permissions) {
+      const subjectsWithErrors = Object.keys(formErrors.permissions) as OrgPermissionSubjects[];
+      setOpenPolicies((prev) => {
+        const next = new Set(prev);
+        subjectsWithErrors.forEach((subject) => next.add(subject));
+        return Array.from(next);
+      });
+    }
+  });
 
   const isCustomRole = !["admin", "member", "no-access"].includes(role?.slug ?? "");
 
@@ -82,7 +96,7 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleFormSubmit}
         className="flex h-full w-full flex-1 flex-col rounded-lg border border-border bg-card py-4"
       >
         <div className="mx-4 flex items-center justify-between border-b border-border pb-4">
@@ -103,7 +117,7 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
                   Discard
                 </Button>
               )}
-              <Button variant="neutral" type="submit" disabled={isSubmitting || !isDirty}>
+              <Button variant="org" type="submit" disabled={isSubmitting || !isDirty}>
                 <SaveIcon className="size-4" />
                 Save
               </Button>
@@ -128,7 +142,7 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
             </Empty>
           )}
           {hasPermissions && (
-            <Accordion type="multiple">
+            <Accordion type="multiple" value={openPolicies} onValueChange={setOpenPolicies}>
               {Object.entries(ORG_PERMISSION_OBJECT)
                 .filter(
                   ([subject]) =>
@@ -142,12 +156,13 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
                 .map(([subject, config]) => (
                   <GeneralPermissionPolicies
                     key={`org-role-${roleId}-permission-${subject}`}
-                    subject={subject}
+                    subject={subject as OrgPermissionSubjects}
                     title={config.title}
                     description={config.description}
                     actions={config.actions}
                     isDisabled={!isCustomRole}
                     isConditional={false}
+                    isOpen={openPolicies.includes(subject)}
                     triggerSuffix={
                       <OrgPermissionQuickSelect
                         subject={subject}
@@ -159,8 +174,9 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
                       isCustomRole
                         ? () =>
                             form.setValue(
-                              `permissions.${subject}` as never,
-                              undefined as never,
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                              `permissions.${subject}` as any,
+                              undefined,
                               { shouldDirty: true }
                             )
                         : undefined

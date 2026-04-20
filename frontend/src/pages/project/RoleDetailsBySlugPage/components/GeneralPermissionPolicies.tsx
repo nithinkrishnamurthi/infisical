@@ -28,6 +28,7 @@ import {
   TooltipTrigger
 } from "@app/components/v3";
 import {
+  OrgPermissionSubjects,
   ProjectPermissionGroupActions,
   ProjectPermissionIdentityActions,
   ProjectPermissionMemberActions,
@@ -41,7 +42,9 @@ export type TPermissionAction = {
   description?: string;
 };
 
-type Props<T extends string> = {
+type AnyPermissionSubject = ProjectPermissionSub | OrgPermissionSubjects;
+
+type Props<T extends AnyPermissionSubject> = {
   title: string;
   description: string;
   subject: T;
@@ -193,7 +196,7 @@ const ActionsMultiSelect = ({
   );
 };
 
-export const GeneralPermissionPolicies = <T extends string>({
+export const GeneralPermissionPolicies = <T extends AnyPermissionSubject>({
   subject,
   actions,
   children,
@@ -220,10 +223,8 @@ export const GeneralPermissionPolicies = <T extends string>({
   });
 
   // scott: this is a hacky work-around to resolve bug of fields not updating UI when removed
-  const watchFields = useWatch({
-    control,
-    name: `permissions.${subject}` as never
-  }) as unknown[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const watchFields = useWatch({ control, name: `permissions.${subject}` as any }) as unknown[];
 
   if (!watchFields || !Array.isArray(watchFields) || watchFields.length === 0) return null;
 
