@@ -22,10 +22,7 @@ import { CertificatePolicyPermissionConditions } from "./CertificatePolicyPermis
 import { CertificateProfilePermissionConditions } from "./CertificateProfilePermissionConditions";
 import { DynamicSecretPermissionConditions } from "./DynamicSecretPermissionConditions";
 import { GeneralPermissionConditions } from "./GeneralPermissionConditions";
-import {
-  GeneralPermissionPolicies,
-  TPermissionAction
-} from "./GeneralPermissionPolicies";
+import { GeneralPermissionPolicies, TPermissionAction } from "./GeneralPermissionPolicies";
 import { GroupPermissionConditions } from "./GroupPermissionConditions";
 import { IdentityManagementPermissionConditions } from "./IdentityManagementPermissionConditions";
 import { McpEndpointPermissionConditions } from "./McpEndpointPermissionConditions";

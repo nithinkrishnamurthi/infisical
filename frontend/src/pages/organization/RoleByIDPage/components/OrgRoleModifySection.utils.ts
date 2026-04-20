@@ -192,9 +192,7 @@ export const formSchema = z.object({
       sso: ssoPermissionSchema,
       scim: generalPermissionSchema,
       "github-org-sync": generalPermissionSchema,
-      "github-org-sync-manual": z
-        .array(z.object({ edit: z.boolean().optional() }))
-        .optional(),
+      "github-org-sync-manual": z.array(z.object({ edit: z.boolean().optional() })).optional(),
       ldap: generalPermissionSchema,
       billing: billingPermissionSchema,
       identity: identityPermissionSchema,

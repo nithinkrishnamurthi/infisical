@@ -177,7 +177,9 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
                             const current = form.getValues("permissions") ?? {};
                             form.setValue(
                               "permissions",
-                              { ...current, [subject]: undefined } as NonNullable<TFormSchema["permissions"]>,
+                              { ...current, [subject]: undefined } as NonNullable<
+                                TFormSchema["permissions"]
+                              >,
                               { shouldDirty: true }
                             );
                           }

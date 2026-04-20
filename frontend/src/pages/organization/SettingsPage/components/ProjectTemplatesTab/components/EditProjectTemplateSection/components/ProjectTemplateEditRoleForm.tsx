@@ -12,7 +12,10 @@ import { isCustomProjectRole } from "@app/helpers/roles";
 import { TProjectTemplate, useUpdateProjectTemplate } from "@app/hooks/api/projectTemplates";
 import { slugSchema } from "@app/lib/schemas";
 import { AddPoliciesButton } from "@app/pages/project/RoleDetailsBySlugPage/components/AddPoliciesButton";
-import { GeneralPermissionPolicies, TPermissionAction } from "@app/pages/project/RoleDetailsBySlugPage/components/GeneralPermissionPolicies";
+import {
+  GeneralPermissionPolicies,
+  TPermissionAction
+} from "@app/pages/project/RoleDetailsBySlugPage/components/GeneralPermissionPolicies";
 import { PermissionEmptyState } from "@app/pages/project/RoleDetailsBySlugPage/components/PermissionEmptyState";
 import {
   formRolePermission2API,

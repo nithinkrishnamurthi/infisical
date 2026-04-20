@@ -1,16 +1,10 @@
 import { useMemo } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@app/components/v3";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@app/components/v3";
 import { OrgPermissionActions } from "@app/context/OrgPermissionContext/types";
 
-import { TOrgPermissionAction, TFormSchema, TPermissionsKey } from "../OrgRoleModifySection.utils";
+import { TFormSchema, TOrgPermissionAction, TPermissionsKey } from "../OrgRoleModifySection.utils";
 
 enum Permission {
   NoAccess = "no-access",
@@ -41,11 +35,17 @@ export const OrgPermissionQuickSelect = ({ subject, actions, isDisabled }: Props
 
   const selectedCount = actions.filter(({ value }) => rule?.[value]).length;
 
-  const setSubjectPermission = (value: NonNullable<TFormSchema["permissions"]>[TPermissionsKey]) => {
+  const setSubjectPermission = (
+    value: NonNullable<TFormSchema["permissions"]>[TPermissionsKey]
+  ) => {
     const current = getValues("permissions") ?? {};
-    setValue("permissions", { ...current, [subject]: value } as NonNullable<TFormSchema["permissions"]>, {
-      shouldDirty: true
-    });
+    setValue(
+      "permissions",
+      { ...current, [subject]: value } as NonNullable<TFormSchema["permissions"]>,
+      {
+        shouldDirty: true
+      }
+    );
     trigger("permissions");
   };
 
@@ -62,7 +62,10 @@ export const OrgPermissionQuickSelect = ({ subject, actions, isDisabled }: Props
     const next =
       val === Permission.FullAccess
         ? allTrue
-        : { ...Object.fromEntries(actions.map(({ value }) => [value, false])), [OrgPermissionActions.Read]: true };
+        : {
+            ...Object.fromEntries(actions.map(({ value }) => [value, false])),
+            [OrgPermissionActions.Read]: true
+          };
 
     setSubjectPermission([next] as NonNullable<TFormSchema["permissions"]>[TPermissionsKey]);
   };
@@ -76,7 +79,10 @@ export const OrgPermissionQuickSelect = ({ subject, actions, isDisabled }: Props
       <SelectTrigger className="h-8 w-40 bg-mineshaft-700">
         <SelectValue />
       </SelectTrigger>
-      <SelectContent position="popper" className="border border-mineshaft-600 bg-mineshaft-800 text-left">
+      <SelectContent
+        position="popper"
+        className="border border-mineshaft-600 bg-mineshaft-800 text-left"
+      >
         <SelectItem value={Permission.NoAccess}>No Access</SelectItem>
         <SelectItem value={Permission.ReadOnly}>Read Only</SelectItem>
         <SelectItem value={Permission.FullAccess}>Full Access</SelectItem>

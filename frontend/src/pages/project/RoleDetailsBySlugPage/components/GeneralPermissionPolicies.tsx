@@ -35,7 +35,6 @@ import {
   ProjectPermissionSub
 } from "@app/context";
 
-
 export type TPermissionAction = {
   value: string | number;
   label: string;
@@ -94,9 +93,7 @@ const ActionsMultiSelect = ({
   const rule = permissionRule as Record<string, boolean> | undefined;
   const secretsRead = Boolean(rule?.read);
   const memberGrantPrivileges = Boolean(rule?.[ProjectPermissionMemberActions.GrantPrivileges]);
-  const identityGrantPrivileges = Boolean(
-    rule?.[ProjectPermissionIdentityActions.GrantPrivileges]
-  );
+  const identityGrantPrivileges = Boolean(rule?.[ProjectPermissionIdentityActions.GrantPrivileges]);
   const groupsGrantPrivileges = Boolean(rule?.[ProjectPermissionGroupActions.GrantPrivileges]);
 
   const legacyActionsState = useMemo(
@@ -370,7 +367,9 @@ export const GeneralPermissionPolicies = <T extends AnyPermissionSubject>({
                           </IconButton>
                         </TooltipTrigger>
                         <TooltipContent side="top">
-                          {fields.length === 1 && onRemoveLastRule ? "Remove Policy" : "Remove Rule"}
+                          {fields.length === 1 && onRemoveLastRule
+                            ? "Remove Policy"
+                            : "Remove Rule"}
                         </TooltipContent>
                       </Tooltip>
                     )}
