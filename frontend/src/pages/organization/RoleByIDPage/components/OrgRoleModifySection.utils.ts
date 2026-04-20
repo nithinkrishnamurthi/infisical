@@ -22,139 +22,153 @@ import {
 import { TPermission } from "@app/hooks/api/roles/types";
 
 const generalPermissionSchema = z
-  .object({
-    read: z.boolean().optional(),
-    edit: z.boolean().optional(),
-    delete: z.boolean().optional(),
-    create: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      read: z.boolean().optional(),
+      edit: z.boolean().optional(),
+      delete: z.boolean().optional(),
+      create: z.boolean().optional()
+    })
+  )
   .optional();
 
 const auditLogsPermissionSchema = z
-  .object({
-    [OrgPermissionAuditLogsActions.Read]: z.boolean().optional()
-  })
+  .array(z.object({ [OrgPermissionAuditLogsActions.Read]: z.boolean().optional() }))
   .optional();
 
 const billingPermissionSchema = z
-  .object({
-    [OrgPermissionBillingActions.Read]: z.boolean().optional(),
-    [OrgPermissionBillingActions.ManageBilling]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionBillingActions.Read]: z.boolean().optional(),
+      [OrgPermissionBillingActions.ManageBilling]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const emailDomainPermissionSchema = z
-  .object({
-    [OrgPermissionEmailDomainActions.Read]: z.boolean().optional(),
-    [OrgPermissionEmailDomainActions.Create]: z.boolean().optional(),
-    [OrgPermissionEmailDomainActions.VerifyDomain]: z.boolean().optional(),
-    [OrgPermissionEmailDomainActions.Delete]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionEmailDomainActions.Read]: z.boolean().optional(),
+      [OrgPermissionEmailDomainActions.Create]: z.boolean().optional(),
+      [OrgPermissionEmailDomainActions.VerifyDomain]: z.boolean().optional(),
+      [OrgPermissionEmailDomainActions.Delete]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const appConnectionsPermissionSchema = z
-  .object({
-    [OrgPermissionAppConnectionActions.Read]: z.boolean().optional(),
-    [OrgPermissionAppConnectionActions.Edit]: z.boolean().optional(),
-    [OrgPermissionAppConnectionActions.Create]: z.boolean().optional(),
-    [OrgPermissionAppConnectionActions.Delete]: z.boolean().optional(),
-    [OrgPermissionAppConnectionActions.Connect]: z.boolean().optional(),
-    [OrgPermissionAppConnectionActions.RotateCredentials]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionAppConnectionActions.Read]: z.boolean().optional(),
+      [OrgPermissionAppConnectionActions.Edit]: z.boolean().optional(),
+      [OrgPermissionAppConnectionActions.Create]: z.boolean().optional(),
+      [OrgPermissionAppConnectionActions.Delete]: z.boolean().optional(),
+      [OrgPermissionAppConnectionActions.Connect]: z.boolean().optional(),
+      [OrgPermissionAppConnectionActions.RotateCredentials]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const kmipPermissionSchema = z
-  .object({
-    [OrgPermissionKmipActions.Proxy]: z.boolean().optional()
-  })
+  .array(z.object({ [OrgPermissionKmipActions.Proxy]: z.boolean().optional() }))
   .optional();
 
 const identityPermissionSchema = z
-  .object({
-    [OrgPermissionIdentityActions.Read]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.Edit]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.Delete]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.Create]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.GrantPrivileges]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.RevokeAuth]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.CreateToken]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.GetToken]: z.boolean().optional(),
-    [OrgPermissionIdentityActions.DeleteToken]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionIdentityActions.Read]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.Edit]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.Delete]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.Create]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.GrantPrivileges]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.RevokeAuth]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.CreateToken]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.GetToken]: z.boolean().optional(),
+      [OrgPermissionIdentityActions.DeleteToken]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const groupPermissionSchema = z
-  .object({
-    [OrgPermissionGroupActions.Read]: z.boolean().optional(),
-    [OrgPermissionGroupActions.Create]: z.boolean().optional(),
-    [OrgPermissionGroupActions.Edit]: z.boolean().optional(),
-    [OrgPermissionGroupActions.Delete]: z.boolean().optional(),
-    [OrgPermissionGroupActions.GrantPrivileges]: z.boolean().optional(),
-    [OrgPermissionGroupActions.AddMembers]: z.boolean().optional(),
-    [OrgPermissionGroupActions.RemoveMembers]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionGroupActions.Read]: z.boolean().optional(),
+      [OrgPermissionGroupActions.Create]: z.boolean().optional(),
+      [OrgPermissionGroupActions.Edit]: z.boolean().optional(),
+      [OrgPermissionGroupActions.Delete]: z.boolean().optional(),
+      [OrgPermissionGroupActions.GrantPrivileges]: z.boolean().optional(),
+      [OrgPermissionGroupActions.AddMembers]: z.boolean().optional(),
+      [OrgPermissionGroupActions.RemoveMembers]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const orgGatewayPermissionSchema = z
-  .object({
-    [OrgGatewayPermissionActions.ListGateways]: z.boolean().optional(),
-    [OrgGatewayPermissionActions.EditGateways]: z.boolean().optional(),
-    [OrgGatewayPermissionActions.DeleteGateways]: z.boolean().optional(),
-    [OrgGatewayPermissionActions.CreateGateways]: z.boolean().optional(),
-    [OrgGatewayPermissionActions.AttachGateways]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgGatewayPermissionActions.ListGateways]: z.boolean().optional(),
+      [OrgGatewayPermissionActions.EditGateways]: z.boolean().optional(),
+      [OrgGatewayPermissionActions.DeleteGateways]: z.boolean().optional(),
+      [OrgGatewayPermissionActions.CreateGateways]: z.boolean().optional(),
+      [OrgGatewayPermissionActions.AttachGateways]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const orgRelayPermissionSchema = z
-  .object({
-    [OrgRelayPermissionActions.ListRelays]: z.boolean().optional(),
-    [OrgRelayPermissionActions.EditRelays]: z.boolean().optional(),
-    [OrgRelayPermissionActions.DeleteRelays]: z.boolean().optional(),
-    [OrgRelayPermissionActions.CreateRelays]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgRelayPermissionActions.ListRelays]: z.boolean().optional(),
+      [OrgRelayPermissionActions.EditRelays]: z.boolean().optional(),
+      [OrgRelayPermissionActions.DeleteRelays]: z.boolean().optional(),
+      [OrgRelayPermissionActions.CreateRelays]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const machineIdentityAuthTemplatePermissionSchema = z
-  .object({
-    [OrgPermissionMachineIdentityAuthTemplateActions.ListTemplates]: z.boolean().optional(),
-    [OrgPermissionMachineIdentityAuthTemplateActions.EditTemplates]: z.boolean().optional(),
-    [OrgPermissionMachineIdentityAuthTemplateActions.DeleteTemplates]: z.boolean().optional(),
-    [OrgPermissionMachineIdentityAuthTemplateActions.CreateTemplates]: z.boolean().optional(),
-    [OrgPermissionMachineIdentityAuthTemplateActions.UnlinkTemplates]: z.boolean().optional(),
-    [OrgPermissionMachineIdentityAuthTemplateActions.AttachTemplates]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionMachineIdentityAuthTemplateActions.ListTemplates]: z.boolean().optional(),
+      [OrgPermissionMachineIdentityAuthTemplateActions.EditTemplates]: z.boolean().optional(),
+      [OrgPermissionMachineIdentityAuthTemplateActions.DeleteTemplates]: z.boolean().optional(),
+      [OrgPermissionMachineIdentityAuthTemplateActions.CreateTemplates]: z.boolean().optional(),
+      [OrgPermissionMachineIdentityAuthTemplateActions.UnlinkTemplates]: z.boolean().optional(),
+      [OrgPermissionMachineIdentityAuthTemplateActions.AttachTemplates]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const adminConsolePermissionSchmea = z
-  .object({
-    "access-all-projects": z.boolean().optional()
-  })
+  .array(z.object({ "access-all-projects": z.boolean().optional() }))
   .optional();
 
 const secretSharingPermissionSchema = z
-  .object({
-    [OrgPermissionSecretShareAction.ManageSettings]: z.boolean().optional()
-  })
+  .array(z.object({ [OrgPermissionSecretShareAction.ManageSettings]: z.boolean().optional() }))
   .optional();
 
 const subOrganizationPermissionSchema = z
-  .object({
-    [OrgPermissionSubOrgActions.Create]: z.boolean().optional(),
-    [OrgPermissionSubOrgActions.Edit]: z.boolean().optional(),
-    [OrgPermissionSubOrgActions.Delete]: z.boolean().optional(),
-    [OrgPermissionSubOrgActions.DirectAccess]: z.boolean().optional(),
-    [OrgPermissionSubOrgActions.LinkGroup]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionSubOrgActions.Create]: z.boolean().optional(),
+      [OrgPermissionSubOrgActions.Edit]: z.boolean().optional(),
+      [OrgPermissionSubOrgActions.Delete]: z.boolean().optional(),
+      [OrgPermissionSubOrgActions.DirectAccess]: z.boolean().optional(),
+      [OrgPermissionSubOrgActions.LinkGroup]: z.boolean().optional()
+    })
+  )
   .optional();
 
 const ssoPermissionSchema = z
-  .object({
-    [OrgPermissionSsoActions.Read]: z.boolean().optional(),
-    [OrgPermissionSsoActions.Create]: z.boolean().optional(),
-    [OrgPermissionSsoActions.Edit]: z.boolean().optional(),
-    [OrgPermissionSsoActions.Delete]: z.boolean().optional(),
-    [OrgPermissionSsoActions.BypassSsoEnforcement]: z.boolean().optional()
-  })
+  .array(
+    z.object({
+      [OrgPermissionSsoActions.Read]: z.boolean().optional(),
+      [OrgPermissionSsoActions.Create]: z.boolean().optional(),
+      [OrgPermissionSsoActions.Edit]: z.boolean().optional(),
+      [OrgPermissionSsoActions.Delete]: z.boolean().optional(),
+      [OrgPermissionSsoActions.BypassSsoEnforcement]: z.boolean().optional()
+    })
+  )
   .optional();
 
 export const formSchema = z.object({
@@ -166,11 +180,7 @@ export const formSchema = z.object({
     .refine((val) => val !== "custom", { message: "Cannot use custom as its a keyword" }),
   permissions: z
     .object({
-      project: z
-        .object({
-          create: z.boolean().optional()
-        })
-        .optional(),
+      project: z.array(z.object({ create: z.boolean().optional() })).optional(),
       "audit-logs": auditLogsPermissionSchema,
       member: generalPermissionSchema,
       groups: groupPermissionSchema,
@@ -182,7 +192,9 @@ export const formSchema = z.object({
       sso: ssoPermissionSchema,
       scim: generalPermissionSchema,
       "github-org-sync": generalPermissionSchema,
-      "github-org-sync-manual": z.object({ edit: z.boolean().optional() }).optional(),
+      "github-org-sync-manual": z
+        .array(z.object({ edit: z.boolean().optional() }))
+        .optional(),
       ldap: generalPermissionSchema,
       billing: billingPermissionSchema,
       identity: identityPermissionSchema,
@@ -199,14 +211,30 @@ export const formSchema = z.object({
       "email-domains": emailDomainPermissionSchema
     })
     .optional()
+    .superRefine((permissions, ctx) => {
+      if (!permissions) return;
+
+      Object.entries(permissions).forEach(([subject, rules]) => {
+        if (!Array.isArray(rules)) return;
+        rules.forEach((rule, ruleIndex) => {
+          if (!rule || typeof rule !== "object") return;
+          const hasAction = Object.values(rule).some((value) => value === true);
+          if (!hasAction) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "At least one action is required",
+              path: [subject, ruleIndex, "actionRequired"]
+            });
+          }
+        });
+      });
+    })
 });
 
 export type TFormSchema = z.infer<typeof formSchema>;
 
-// convert role permission to form compatiable  data structure
 export const rolePermission2Form = (permissions: TPermission[] = []) => {
-  // any because if it set it as form type due to the discriminated union type of ts
-  // i would have to write a if loop with both conditions same
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formVal: Record<string, any> = {};
   permissions.forEach((permission) => {
     const { action } = permission;
@@ -214,8 +242,8 @@ export const rolePermission2Form = (permissions: TPermission[] = []) => {
     if (subject === OrgPermissionSubjects.Workspace) {
       subject = OrgPermissionSubjects.Project;
     }
-    if (!formVal?.[subject]) formVal[subject] = {};
-    formVal[subject][action] = true;
+    if (!formVal?.[subject]) formVal[subject] = [{}];
+    formVal[subject][0][action] = true;
   });
 
   return formVal;
@@ -865,9 +893,9 @@ export const ORG_PERMISSION_OBJECT: Record<string, TOrgPermissionConfig> = {
 
 export const formRolePermission2API = (formVal: TFormSchema["permissions"]) => {
   const permissions: TPermission[] = [];
-  Object.entries(formVal || {}).forEach(([rule, actions]) => {
-    if (!actions) return;
-    Object.entries(actions).forEach(([action, isAllowed]) => {
+  Object.entries(formVal || {}).forEach(([rule, ruleArr]) => {
+    if (!ruleArr?.[0]) return;
+    Object.entries(ruleArr[0]).forEach(([action, isAllowed]) => {
       if (isAllowed) {
         permissions.push({ subject: rule, action });
       }

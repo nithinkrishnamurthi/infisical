@@ -4,57 +4,26 @@ import { SaveIcon } from "lucide-react";
 
 import { createNotification } from "@app/components/notifications";
 import {
+  Accordion,
   Button,
-  UnstableAccordion,
-  UnstableEmpty,
-  UnstableEmptyDescription,
-  UnstableEmptyHeader,
-  UnstableEmptyTitle
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle
 } from "@app/components/v3";
 import { OrgPermissionSubjects, useOrganization } from "@app/context";
 import { useGetOrgRole, useUpdateOrgRole } from "@app/hooks/api";
-import { OrgPermissionAppConnectionRow } from "@app/pages/organization/RoleByIDPage/components/RolePermissionsSection/OrgPermissionAppConnectionRow";
+import { GeneralPermissionPolicies } from "@app/pages/project/RoleDetailsBySlugPage/components/GeneralPermissionPolicies";
 
 import {
   formRolePermission2API,
   formSchema,
+  ORG_PERMISSION_OBJECT,
   rolePermission2Form,
   TFormSchema
 } from "../OrgRoleModifySection.utils";
 import { OrgAddPoliciesButton } from "./OrgAddPoliciesButton";
-import { OrgPermissionAdminConsoleRow } from "./OrgPermissionAdminConsoleRow";
-import { OrgPermissionAuditLogsRow } from "./OrgPermissionAuditLogsRow";
-import { OrgPermissionBillingRow } from "./OrgPermissionBillingRow";
-import { OrgPermissionEmailDomainRow } from "./OrgPermissionEmailDomainRow";
-import { OrgGatewayPermissionRow } from "./OrgPermissionGatewayRow";
-import { OrgPermissionGithubOrgSyncManualRow } from "./OrgPermissionGithubOrgSyncManualRow";
-import { OrgPermissionGroupRow } from "./OrgPermissionGroupRow";
-import { OrgPermissionIdentityRow } from "./OrgPermissionIdentityRow";
-import { OrgPermissionKmipRow } from "./OrgPermissionKmipRow";
-import { OrgPermissionMachineIdentityAuthTemplateRow } from "./OrgPermissionMachineIdentityAuthTemplateRow";
-import { OrgRelayPermissionRow } from "./OrgPermissionRelayRow";
-import { OrgPermissionSecretShareRow } from "./OrgPermissionSecretShareRow";
-import { OrgPermissionSsoRow } from "./OrgPermissionSsoRow";
-import { OrgPermissionSubOrgRow } from "./OrgPermissionSubOrgRow";
-import { OrgRoleWorkspaceRow } from "./OrgRoleWorkspaceRow";
-import { RolePermissionRow } from "./RolePermissionRow";
-
-const SIMPLE_PERMISSION_SUBJECTS = [
-  OrgPermissionSubjects.Member,
-  OrgPermissionSubjects.Role,
-  OrgPermissionSubjects.IncidentAccount,
-  OrgPermissionSubjects.Settings,
-  OrgPermissionSubjects.SecretScanning,
-  OrgPermissionSubjects.Ldap,
-  OrgPermissionSubjects.Scim,
-  OrgPermissionSubjects.GithubOrgSync,
-  OrgPermissionSubjects.Kms,
-  OrgPermissionSubjects.ProjectTemplates
-] as const;
-
-type Props = {
-  roleId: string;
-};
+import { OrgPermissionQuickSelect } from "./OrgPermissionQuickSelect";
 
 const INVALID_SUBORG_PERMISSIONS = [
   OrgPermissionSubjects.Sso,
@@ -65,6 +34,10 @@ const INVALID_SUBORG_PERMISSIONS = [
   OrgPermissionSubjects.Billing,
   OrgPermissionSubjects.SubOrganization
 ];
+
+type Props = {
+  roleId: string;
+};
 
 export const RolePermissionsSection = ({ roleId }: Props) => {
   const { currentOrg, isRootOrganization } = useOrganization();
@@ -78,8 +51,6 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
   });
 
   const {
-    setValue,
-    control,
     handleSubmit,
     formState: { isDirty, isSubmitting },
     reset
@@ -100,15 +71,13 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
 
   const isCustomRole = !["admin", "member", "no-access"].includes(role?.slug ?? "");
 
-  const permissions = useWatch({ control, name: "permissions" });
+  const permissions = useWatch({ control: form.control, name: "permissions" });
 
-  const hasPermissions = Object.values(permissions || {}).some((v) => v !== undefined);
+  const hasPermissions = Object.values(permissions || {}).some(
+    (v) => Array.isArray(v) && v.length > 0
+  );
 
   const invalidSubjectsForAddPolicy = isRootOrganization ? [] : INVALID_SUBORG_PERMISSIONS;
-
-  const handleDeletePermission = (subject: OrgPermissionSubjects) => {
-    setValue(`permissions.${subject}` as never, undefined as never, { shouldDirty: true });
-  };
 
   return (
     <FormProvider {...form}>
@@ -149,227 +118,56 @@ export const RolePermissionsSection = ({ roleId }: Props) => {
         </div>
         <div className="px-4 py-4">
           {!hasPermissions && (
-            <UnstableEmpty className="border py-8">
-              <UnstableEmptyHeader>
-                <UnstableEmptyTitle>No policies applied</UnstableEmptyTitle>
-                <UnstableEmptyDescription>
+            <Empty className="border py-8">
+              <EmptyHeader>
+                <EmptyTitle>No policies applied</EmptyTitle>
+                <EmptyDescription>
                   Add policies to configure permissions for this role.
-                </UnstableEmptyDescription>
-              </UnstableEmptyHeader>
-            </UnstableEmpty>
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
           {hasPermissions && (
-            <UnstableAccordion type="multiple">
-              {SIMPLE_PERMISSION_SUBJECTS.filter((subject) =>
-                isRootOrganization ? true : !INVALID_SUBORG_PERMISSIONS.includes(subject)
-              )
-                .filter((subject) => permissions?.[subject] !== undefined)
-                .map((subject) => (
-                  <RolePermissionRow
-                    formName={subject}
-                    control={control}
-                    setValue={setValue}
+            <Accordion type="multiple">
+              {Object.entries(ORG_PERMISSION_OBJECT)
+                .filter(
+                  ([subject]) =>
+                    isRootOrganization ||
+                    !INVALID_SUBORG_PERMISSIONS.includes(subject as OrgPermissionSubjects)
+                )
+                .filter(
+                  ([subject]) =>
+                    (permissions?.[subject as keyof typeof permissions] as unknown[])?.length > 0
+                )
+                .map(([subject, config]) => (
+                  <GeneralPermissionPolicies
                     key={`org-role-${roleId}-permission-${subject}`}
-                    isEditable={isCustomRole}
-                    onDelete={isCustomRole ? () => handleDeletePermission(subject) : undefined}
+                    subject={subject}
+                    title={config.title}
+                    description={config.description}
+                    actions={config.actions}
+                    isDisabled={!isCustomRole}
+                    isConditional={false}
+                    triggerSuffix={
+                      <OrgPermissionQuickSelect
+                        subject={subject}
+                        actions={config.actions}
+                        isDisabled={!isCustomRole}
+                      />
+                    }
+                    onRemoveLastRule={
+                      isCustomRole
+                        ? () =>
+                            form.setValue(
+                              `permissions.${subject}` as never,
+                              undefined as never,
+                              { shouldDirty: true }
+                            )
+                        : undefined
+                    }
                   />
                 ))}
-              {isRootOrganization &&
-                permissions?.[OrgPermissionSubjects.GithubOrgSyncManual] !== undefined && (
-                  <OrgPermissionGithubOrgSyncManualRow
-                    control={control}
-                    setValue={setValue}
-                    isEditable={isCustomRole}
-                    onDelete={
-                      isCustomRole
-                        ? () => handleDeletePermission(OrgPermissionSubjects.GithubOrgSyncManual)
-                        : undefined
-                    }
-                  />
-                )}
-              {isRootOrganization && permissions?.[OrgPermissionSubjects.Sso] !== undefined && (
-                <OrgPermissionSsoRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Sso)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.AuditLogs] !== undefined && (
-                <OrgPermissionAuditLogsRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.AuditLogs)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.Identity] !== undefined && (
-                <OrgPermissionIdentityRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Identity)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.Groups] !== undefined && (
-                <OrgPermissionGroupRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Groups)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.AppConnections] !== undefined && (
-                <OrgPermissionAppConnectionRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.AppConnections)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.Gateway] !== undefined && (
-                <OrgGatewayPermissionRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Gateway)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.Relay] !== undefined && (
-                <OrgRelayPermissionRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Relay)
-                      : undefined
-                  }
-                />
-              )}
-              {isRootOrganization && permissions?.[OrgPermissionSubjects.Billing] !== undefined && (
-                <OrgPermissionBillingRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Billing)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.EmailDomains] !== undefined && (
-                <OrgPermissionEmailDomainRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.EmailDomains)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.SecretShare] !== undefined && (
-                <OrgPermissionSecretShareRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.SecretShare)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.Project] !== undefined && (
-                <OrgRoleWorkspaceRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Project)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.AdminConsole] !== undefined && (
-                <OrgPermissionAdminConsoleRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.AdminConsole)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.MachineIdentityAuthTemplate] !== undefined && (
-                <OrgPermissionMachineIdentityAuthTemplateRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () =>
-                          handleDeletePermission(OrgPermissionSubjects.MachineIdentityAuthTemplate)
-                      : undefined
-                  }
-                />
-              )}
-              {permissions?.[OrgPermissionSubjects.Kmip] !== undefined && (
-                <OrgPermissionKmipRow
-                  control={control}
-                  setValue={setValue}
-                  isEditable={isCustomRole}
-                  onDelete={
-                    isCustomRole
-                      ? () => handleDeletePermission(OrgPermissionSubjects.Kmip)
-                      : undefined
-                  }
-                />
-              )}
-              {isRootOrganization &&
-                permissions?.[OrgPermissionSubjects.SubOrganization] !== undefined && (
-                  <OrgPermissionSubOrgRow
-                    control={control}
-                    setValue={setValue}
-                    isEditable={isCustomRole}
-                    onDelete={
-                      isCustomRole
-                        ? () => handleDeletePermission(OrgPermissionSubjects.SubOrganization)
-                        : undefined
-                    }
-                  />
-                )}
-            </UnstableAccordion>
+            </Accordion>
           )}
         </div>
       </form>

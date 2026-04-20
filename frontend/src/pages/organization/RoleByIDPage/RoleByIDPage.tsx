@@ -9,10 +9,10 @@ import { OrgPermissionCan } from "@app/components/permissions";
 import { DeleteActionModal, PageHeader } from "@app/components/v2";
 import {
   Button,
-  UnstableDropdownMenu,
-  UnstableDropdownMenuContent,
-  UnstableDropdownMenuItem,
-  UnstableDropdownMenuTrigger
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@app/components/v3";
 import { ROUTE_PATHS } from "@app/const/routes";
 import { OrgPermissionActions, OrgPermissionSubjects, useOrganization } from "@app/context";
@@ -90,15 +90,15 @@ export const Page = () => {
             }
           >
             {isCustomRole && (
-              <UnstableDropdownMenu>
-                <UnstableDropdownMenuTrigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button variant="outline">
                     Options
                     <EllipsisIcon />
                   </Button>
-                </UnstableDropdownMenuTrigger>
-                <UnstableDropdownMenuContent align="end">
-                  <UnstableDropdownMenuItem
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
                     onClick={() => {
                       navigator.clipboard.writeText(data.id);
 
@@ -110,8 +110,8 @@ export const Page = () => {
                   >
                     <CopyIcon />
                     Copy ID
-                  </UnstableDropdownMenuItem>
-                  <UnstableDropdownMenuItem
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
                     onClick={() => {
                       navigator.clipboard.writeText(data.slug);
 
@@ -123,10 +123,10 @@ export const Page = () => {
                   >
                     <CopyIcon />
                     Copy Slug
-                  </UnstableDropdownMenuItem>
+                  </DropdownMenuItem>
                   <OrgPermissionCan I={OrgPermissionActions.Edit} a={OrgPermissionSubjects.Role}>
                     {(isAllowed) => (
-                      <UnstableDropdownMenuItem
+                      <DropdownMenuItem
                         className={twMerge(
                           !isAllowed && "pointer-events-none cursor-not-allowed opacity-50"
                         )}
@@ -139,12 +139,12 @@ export const Page = () => {
                       >
                         <PencilIcon />
                         Edit Role
-                      </UnstableDropdownMenuItem>
+                      </DropdownMenuItem>
                     )}
                   </OrgPermissionCan>
                   <OrgPermissionCan I={OrgPermissionActions.Create} a={OrgPermissionSubjects.Role}>
                     {(isAllowed) => (
-                      <UnstableDropdownMenuItem
+                      <DropdownMenuItem
                         className={twMerge(
                           !isAllowed && "pointer-events-none cursor-not-allowed opacity-50"
                         )}
@@ -155,12 +155,12 @@ export const Page = () => {
                       >
                         <CopyIcon />
                         Duplicate Role
-                      </UnstableDropdownMenuItem>
+                      </DropdownMenuItem>
                     )}
                   </OrgPermissionCan>
                   <OrgPermissionCan I={OrgPermissionActions.Delete} a={OrgPermissionSubjects.Role}>
                     {(isAllowed) => (
-                      <UnstableDropdownMenuItem
+                      <DropdownMenuItem
                         variant="danger"
                         onClick={() => {
                           handlePopUpOpen("deleteOrgRole");
@@ -169,11 +169,11 @@ export const Page = () => {
                       >
                         <TrashIcon />
                         Delete Role
-                      </UnstableDropdownMenuItem>
+                      </DropdownMenuItem>
                     )}
                   </OrgPermissionCan>
-                </UnstableDropdownMenuContent>
-              </UnstableDropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </PageHeader>
           <RolePermissionsSection roleId={roleId} />

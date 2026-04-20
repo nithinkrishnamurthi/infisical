@@ -1,4 +1,4 @@
-import { cloneElement, Fragment, RefObject, useMemo } from "react";
+import { cloneElement, Fragment, ReactNode, RefObject, useEffect, useMemo } from "react";
 import {
   Control,
   Controller,
@@ -16,7 +16,6 @@ import {
   AccordionTrigger,
   Badge,
   Button,
-  FilterableSelect,
   IconButton,
   PermissionActionSelect,
   Select,
@@ -35,42 +34,47 @@ import {
   ProjectPermissionSub
 } from "@app/context";
 
-import {
-  isConditionalSubjects,
-  TFormSchema,
-  TProjectPermissionObject
-} from "./ProjectRoleModifySection.utils";
 
-type Props<T extends ProjectPermissionSub> = {
+export type TPermissionAction = {
+  value: string | number;
+  label: string;
+  description?: string;
+};
+
+type Props<T extends string> = {
   title: string;
   description: string;
   subject: T;
-  actions: TProjectPermissionObject[T]["actions"];
+  actions: readonly TPermissionAction[];
+  isConditional?: boolean;
+  triggerSuffix?: ReactNode;
+  onRemoveLastRule?: () => void;
   children?: JSX.Element;
   isDisabled?: boolean;
   isOpen?: boolean;
-  onShowAccessTree?: (subject: ProjectPermissionSub) => void;
+  onShowAccessTree?: (subject: string) => void;
   menuPortalContainerRef?: RefObject<HTMLElement | null>;
 };
 
-type ActionsMultiSelectProps<T extends ProjectPermissionSub> = {
-  subject: T;
+type ActionsMultiSelectProps = {
+  subject: string;
   rootIndex: number;
-  actions: TProjectPermissionObject[T]["actions"];
+  actions: readonly TPermissionAction[];
   isDisabled?: boolean;
-  control: Control<TFormSchema>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  control: Control<any>;
   menuPortalContainerRef?: RefObject<HTMLElement | null>;
 };
 
-const ActionsMultiSelect = <T extends ProjectPermissionSub>({
+const ActionsMultiSelect = ({
   subject,
   rootIndex,
   actions,
   isDisabled,
   control,
   menuPortalContainerRef
-}: ActionsMultiSelectProps<T>) => {
-  const { setValue, trigger } = useFormContext<TFormSchema>();
+}: ActionsMultiSelectProps) => {
+  const { setValue, trigger } = useFormContext();
 
   const { errors } = useFormState({
     control,
@@ -84,16 +88,13 @@ const ActionsMultiSelect = <T extends ProjectPermissionSub>({
     defaultValue: {}
   });
 
-  const secretsRead = Boolean(permissionRule?.read);
-  const memberGrantPrivileges = Boolean(
-    permissionRule?.[ProjectPermissionMemberActions.GrantPrivileges]
-  );
+  const rule = permissionRule as Record<string, boolean> | undefined;
+  const secretsRead = Boolean(rule?.read);
+  const memberGrantPrivileges = Boolean(rule?.[ProjectPermissionMemberActions.GrantPrivileges]);
   const identityGrantPrivileges = Boolean(
-    permissionRule?.[ProjectPermissionIdentityActions.GrantPrivileges]
+    rule?.[ProjectPermissionIdentityActions.GrantPrivileges]
   );
-  const groupsGrantPrivileges = Boolean(
-    permissionRule?.[ProjectPermissionGroupActions.GrantPrivileges]
-  );
+  const groupsGrantPrivileges = Boolean(rule?.[ProjectPermissionGroupActions.GrantPrivileges]);
 
   const legacyActionsState = useMemo(
     () => ({
@@ -151,8 +152,8 @@ const ActionsMultiSelect = <T extends ProjectPermissionSub>({
   );
 
   const selectedActions = useMemo(
-    () => actionOptions.filter((opt) => Boolean(permissionRule?.[opt.value])),
-    [actionOptions, permissionRule]
+    () => actionOptions.filter((opt) => Boolean(rule?.[opt.value])),
+    [actionOptions, rule]
   );
 
   const handleChange = (newValue: unknown) => {
@@ -192,28 +193,37 @@ const ActionsMultiSelect = <T extends ProjectPermissionSub>({
   );
 };
 
-export const GeneralPermissionPolicies = <T extends keyof NonNullable<TFormSchema["permissions"]>>({
+export const GeneralPermissionPolicies = <T extends string>({
   subject,
   actions,
   children,
   title,
   description,
+  isConditional,
+  triggerSuffix,
+  onRemoveLastRule,
   isDisabled,
   isOpen = false,
   onShowAccessTree,
   menuPortalContainerRef
 }: Props<T>) => {
-  const { control, watch } = useFormContext<TFormSchema>();
-  const { fields, remove, insert } = useFieldArray({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { control, watch, trigger } = useFormContext<any>();
+
+  useEffect(() => {
+    trigger("permissions");
+  }, []);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { fields, remove, insert } = useFieldArray<any>({
     control,
     name: `permissions.${subject}`
   });
 
   // scott: this is a hacky work-around to resolve bug of fields not updating UI when removed
-  const watchFields = useWatch<TFormSchema>({
+  const watchFields = useWatch({
     control,
-    name: `permissions.${subject}`
-  });
+    name: `permissions.${subject}` as never
+  }) as unknown[];
 
   if (!watchFields || !Array.isArray(watchFields) || watchFields.length === 0) return null;
 
@@ -225,6 +235,11 @@ export const GeneralPermissionPolicies = <T extends keyof NonNullable<TFormSchem
             <span className="text-base select-none">{title}</span>
             <span className="text-sm text-muted">{description}</span>
           </div>
+          {triggerSuffix && (
+            <div role="none" onClick={(e) => e.stopPropagation()}>
+              {triggerSuffix}
+            </div>
+          )}
           {fields.length > 1 && (
             <Badge variant="neutral" className="mr-2">
               {fields.length} Rules
@@ -246,7 +261,7 @@ export const GeneralPermissionPolicies = <T extends keyof NonNullable<TFormSchem
                   Visualize Access
                 </Button>
               )}
-              {!isDisabled && isConditionalSubjects(subject) && (
+              {!isDisabled && isConditional && (
                 <Button
                   type="button"
                   variant="outline"
@@ -304,7 +319,7 @@ export const GeneralPermissionPolicies = <T extends keyof NonNullable<TFormSchem
                   )}
                 >
                   <div className="flex items-start gap-2">
-                    {isConditionalSubjects(subject) && (
+                    {isConditional && (
                       <Controller
                         defaultValue={false as any}
                         name={`permissions.${subject}.${rootIndex}.inverted`}
@@ -335,19 +350,27 @@ export const GeneralPermissionPolicies = <T extends keyof NonNullable<TFormSchem
                         menuPortalContainerRef={menuPortalContainerRef}
                       />
                     </div>
-                    {!isDisabled && (
+                    {!isDisabled && (fields.length > 1 || isConditional || !!onRemoveLastRule) && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <IconButton
                             aria-label="Remove rule"
                             variant="danger"
-                            onClick={() => remove(rootIndex)}
+                            onClick={() => {
+                              if (fields.length === 1 && onRemoveLastRule) {
+                                onRemoveLastRule();
+                              } else {
+                                remove(rootIndex);
+                              }
+                            }}
                             isDisabled={isDisabled}
                           >
                             <TrashIcon className="size-4" />
                           </IconButton>
                         </TooltipTrigger>
-                        <TooltipContent side="top">Remove Rule</TooltipContent>
+                        <TooltipContent side="top">
+                          {fields.length === 1 && onRemoveLastRule ? "Remove Policy" : "Remove Rule"}
+                        </TooltipContent>
                       </Tooltip>
                     )}
                   </div>

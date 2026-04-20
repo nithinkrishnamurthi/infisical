@@ -28,11 +28,11 @@ const Content = ({ invalidSubjects }: { invalidSubjects?: string[] }) => {
   const currentPermissions = useWatch({ control: form.control, name: "permissions" });
 
   const handleSelectPolicy = (subject: string) => {
-    const existingValue = form.getValues(`permissions.${subject}` as never);
-    if (existingValue !== undefined) {
+    const existingValue = form.getValues(`permissions.${subject}` as never) as unknown[];
+    if (existingValue?.length > 0) {
       form.setValue(`permissions.${subject}` as never, undefined as never, { shouldDirty: true });
     } else {
-      form.setValue(`permissions.${subject}` as never, {} as never, { shouldDirty: true });
+      form.setValue(`permissions.${subject}` as never, [{}] as never, { shouldDirty: true });
     }
   };
 
@@ -54,7 +54,8 @@ const Content = ({ invalidSubjects }: { invalidSubjects?: string[] }) => {
         <CommandGroup>
           {filteredSubjects.map((subject) => {
             const hasPolicy =
-              currentPermissions?.[subject as keyof typeof currentPermissions] !== undefined;
+              (currentPermissions?.[subject as keyof typeof currentPermissions] as unknown[])
+                ?.length > 0;
 
             return (
               <CommandItem
