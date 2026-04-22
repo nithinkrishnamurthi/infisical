@@ -1,0 +1,56 @@
+name: vetter
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: vetter-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure env
+        run: cp .env.example .env
+
+      - name: Start stack
+        run: docker compose -f docker-compose.prod.yml --env-file .env up -d
+
+      - name: Wait for web
+        run: |
+          for i in $(seq 1 240); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost" || true)
+            if [ "$code" = "200" ] || [ "$code" = "302" ] || [ "$code" = "307" ]; then
+              echo "infisical up (HTTP $code)"; exit 0
+            fi
+            sleep 2
+          done
+          docker compose -f docker-compose.prod.yml ps >&2
+          docker compose -f docker-compose.prod.yml logs --tail=120 >&2
+          exit 1
+
+      - uses: nithinkrishnamurthi/vetter/action@main
+        with:
+          api-key: ${{ secrets.VETTER_API_KEY }}
+          api-base: ${{ vars.VETTER_API_BASE }}
+          app-url: http://localhost
+
+      - name: Stack logs
+        if: always()
+        run: docker compose -f docker-compose.prod.yml logs --no-color > stack.log || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stack-logs-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          path: stack.log
+          if-no-files-found: ignore
